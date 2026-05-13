@@ -1,0 +1,16 @@
+{
+  "name": "NexusOS",
+  "short_name": "NexusOS",
+  "description": "Intelligent Service Management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#18181b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

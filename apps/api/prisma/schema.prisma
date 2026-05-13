@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum PersonType {
+  FISICA
+  JURIDICA
+}
+
+enum ContactType {
+  CLIENTE
+  CONTRATO
+  PARCEIRO
+  FORNECEDOR
+  GARANTIA
+  FABRICANTE
+  REMOTO
+  VISITA
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("USER") // ADMIN, USER, TECHNICIAN
+  workOrders WorkOrder[]
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  personType   PersonType  @default(FISICA)
+  contactType  ContactType @default(CLIENTE)
+  document  String?  // CPF/CNPJ
+  email     String?
+  phone         String?
+  zipCode       String?
+  street        String?
+  number        String?
+  complement    String?
+  neighborhood  String?
+  city          String?
+  state         String?
+  birthDate     DateTime? // Data de nascimento para o CRM
+  origin        String?  // Origem do cliente (CRM)
+  responsibleName String?
+  devicePassword  String?
+  observations    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  workOrders    WorkOrder[]
+  equipments    Equipment[]
+}
+
+model Equipment {
+  id           String   @id @default(uuid())
+  name         String   // Ex: Notebook, Placa Mãe
+  tag          String?  @unique // Etiqueta (ID único)
+  brandModel   String?  // Marca/Modelo
+  serialNumber String?  // Nº Série
+  observations String?  // Observações Técnicas
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id])
+
+  workOrders   WorkOrder[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  location    String?
+  costPrice   Float?
+  price       Float    @default(0)
+  stock       Int      @default(0)
+  minStock    Int      @default(0)
+  
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
+  
+  supplierName String?
+  
+  orderItems  WorkOrderProduct[]
+  stockMovements StockMovement[]
+}
+
+model StockMovement {
+  id          String   @id @default(uuid())
+  type        String   // ENTRADA, SAIDA
+  quantity    Int
+  description String?
+  createdAt   DateTime @default(now())
+  
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float    @default(0)
+  orderItems  WorkOrderService[]
+}
+
+enum OSPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum OSStatus {
+  ENTRADA
+  ORCAMENTO
+  ABERTO
+  ANDAMENTO
+  CONCLUIDO
+  FATURADO
+  CANCELADO
+}
+
+enum PaymentStatus {
+  PENDENTE
+  RECEBIDO
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  description String
+  amount      Float
+  dueDate     DateTime
+  status      PaymentStatus @default(PENDENTE)
+  createdAt   DateTime      @default(now())
+  
+  workOrderId Int
+  workOrder   WorkOrder     @relation(fields: [workOrderId], references: [id])
+}
+
+model WorkOrder {
+  id            Int      @id @default(autoincrement())
+  status        OSStatus @default(ENTRADA)
+  priority      OSPriority @default(NORMAL)
+  entryDate     DateTime @default(now())
+  deadline      DateTime?
+  exitDate      DateTime?
+  
+  equipment     String
+  brandModel    String
+  serialNumber  String?
+  clientReport  String?
+  technicalAnalysis String?
+  observations  String?
+  
+  origin        String?
+  warranty      String?
+  terms         String?
+  situation     String?
+  attendant     String?
+  
+  totalValue    Float    @default(0)
+  
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  
+  equipmentId   String?
+  equipmentRef  Equipment? @relation(fields: [equipmentId], references: [id])
+
+  userId        String?
+  technician    User?     @relation(fields: [userId], references: [id])
+  
+  employeeId    Int?
+  employee      Employee? @relation(fields: [employeeId], references: [id])
+  commissionValue Float?
+  commissionPaid  Boolean @default(false)
+  commissionPaidAt DateTime?
+  
+  products      WorkOrderProduct[]
+  services      WorkOrderService[]
+  payments      Payment[]
+}
+
+model Employee {
+  id             Int         @id @default(autoincrement())
+  name           String
+  cpf            String      @unique
+  phone          String
+  commissionRate Float
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
+  workOrders     WorkOrder[]
+}
+
+model WorkOrderProduct {
+  id          String   @id @default(uuid())
+  quantity    Int      @default(1)
+  unitPrice   Float
+  
+  workOrderId Int
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+}
+
+model WorkOrderService {
+  id          String   @id @default(uuid())
+  quantity    Int      @default(1)
+  unitPrice   Float
+  
+  workOrderId Int
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+  
+  serviceId   String
+  service     Service   @relation(fields: [serviceId], references: [id])
+}

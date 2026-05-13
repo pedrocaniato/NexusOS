@@ -1,0 +1,22 @@
+# Monorepo Root gitignore
+
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Apps generic
+**/dist
+**/.next
+**/out
+**/build
+**/*.log
+
+# Sensitive info
+**/.env
+**/.env.*.local
+
+# Database
+**/*.db
+**/*.db-journal
