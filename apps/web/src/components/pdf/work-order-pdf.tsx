@@ -165,7 +165,7 @@ export const WorkOrderPdf = ({ os }: { os: any }) => (
           <Text style={styles.logoText}>NexusOS</Text>
           <View style={{ width: 2, height: 30, backgroundColor: '#FFD700' }} />
         </View>
-        <View style={{ alignItems: 'flex-right' }}>
+        <View style={{ alignItems: 'flex-end' }}>
           <Text style={styles.osTitle}>Ordem de Serviço</Text>
           <Text style={styles.osNumber}>#{os.id.toString().padStart(4, '0')}</Text>
         </View>
